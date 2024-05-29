@@ -1,38 +1,34 @@
 package ir.samin.appbuilder.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-
-
-@Getter
 @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminCreationDTO {
+public class AdminFullDTO {
 
     private Long id;
 
-    @NotBlank
-    @NotNull
-    private String mobileNumber;
-
-    @NotBlank
-    @NotNull
     private String firstName;
 
-    @NotBlank
-    @NotNull
     private String lastName;
 
-    @NotBlank
-    @NotNull
-    private String role;
+    private String newPassword;
+
+    private String email;
+
+
+    private String mobileNumber;
+
 
     private Boolean isActive;
 
+    private RoleDTO role;
+
+    private String createdAtDateTime;
 }

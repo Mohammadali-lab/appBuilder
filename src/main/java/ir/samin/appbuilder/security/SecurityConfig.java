@@ -101,8 +101,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepo) {
         return username -> {
-            User user = userRepo.findByUsername(username);
-            if (user != null) return new CustomUserDetails(user);
+            Optional<User> user = userRepo.findByUsername(username);
+            if (user.isPresent()) return new CustomUserDetails(user.get());
 
             throw new UsernameNotFoundException("User '" + username + "' not found");
         };

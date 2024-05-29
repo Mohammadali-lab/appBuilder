@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ir.samin.appbuilder.dao.UserRepository;
 import ir.samin.appbuilder.dto.*;
+import ir.samin.appbuilder.entity.Ticket;
 import ir.samin.appbuilder.entity.User;
 import ir.samin.appbuilder.exception.GeneralRuntimeException;
 import ir.samin.appbuilder.security.JwtUtil;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -52,7 +54,7 @@ public class UserService {
 
 
     public void generateOtp(UserAuthRequestDTO requestDTO) throws UnsupportedEncodingException, JsonProcessingException {
-        User user = userRepository.findByUsername(requestDTO.getPhoneNumber());
+        User user = userRepository.findByUsername(requestDTO.getPhoneNumber()).get();
         user.setEnabled(false);
         String code = Integer.toString(generateConfirmCode());
         user.setConfirmCode(code);
@@ -94,13 +96,13 @@ public class UserService {
     }
 
     public void disableUser(String username) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         user.setEnabled(false);
         userRepository.save(user);
     }
 
     public void enableUser(String username) {
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(username).get();
         user.setEnabled(true);
         userRepository.save(user);
     }
@@ -117,8 +119,9 @@ public class UserService {
 //    }
 
     public UserAuthResponseDTO confirmUser(ConfirmationCode confirmationCode) {
-        User user = userRepository.findByUsername(confirmationCode.getPhoneNumber());
-        if (user!=null){
+        Optional<User> returnedUser = userRepository.findByUsername(confirmationCode.getPhoneNumber());
+        if (returnedUser.isPresent()){
+            User user = returnedUser.get();
             LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);
             if (user.getConfirmCodeRegisterTime().isAfter(fiveMinutesAgo) &&
                     confirmationCode.getOtpCode().equals(user.getConfirmCode())) {
@@ -138,6 +141,20 @@ public class UserService {
             throw new RuntimeException("otpCode is not valid");
         }
         throw new RuntimeException("user not found");
+    }
+
+    public User findUserByPhoneNumber(String phoneNumber) {
+
+        Optional<User> user = userRepository.findByUsername(phoneNumber);
+        return user.orElse(null);
+    }
+
+    public void setTicket(User user, TicketDTO ticketDTO) {
+
+        Ticket ticket = new Ticket();
+        ticket.setMessage(ticketDTO.getMessage());
+        user.add(ticket);
+        userRepository.save(user);
     }
 
     public ResponseEntity sendSms(String phoneNumber, String otpCode) throws JsonProcessingException, UnsupportedEncodingException {

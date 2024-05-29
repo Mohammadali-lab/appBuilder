@@ -2,8 +2,11 @@ package ir.samin.appbuilder.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import ir.samin.appbuilder.dto.ConfirmationCode;
+import ir.samin.appbuilder.dto.TicketDTO;
 import ir.samin.appbuilder.dto.UserAuthRequestDTO;
 import ir.samin.appbuilder.dto.UserResponseDTO;
+import ir.samin.appbuilder.entity.Ticket;
+import ir.samin.appbuilder.entity.User;
 import ir.samin.appbuilder.security.JwtUtil;
 import ir.samin.appbuilder.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -96,5 +99,18 @@ public class CustomerController {
         // Invalidate the user's session
         SecurityContextHolder.clearContext();
         return ResponseEntity.ok("Logout successful");
+    }
+
+    @PostMapping("/set-ticket")
+    public ResponseEntity<?> ticket(@RequestBody TicketDTO ticketDTO) {
+
+        String phoneNumber = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userService.findUserByPhoneNumber(phoneNumber);
+
+        userService.setTicket(user, ticketDTO);
+
+        return ResponseEntity.ok("ticket saved successfully");
+
     }
 }

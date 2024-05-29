@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Set;
 
 @Entity
 @Table(name = "admin")
@@ -29,7 +30,13 @@ public class Admin extends BaseEntity {
     @Column(name = "is_enabled")
     private boolean isEnabled;
 
+    @Column(name = "is_active")
+    private boolean isActive;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
+
+    @OneToMany(mappedBy = "admin")
+    private Set<Ticket> tickets;
 }
