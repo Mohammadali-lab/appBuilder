@@ -26,6 +26,8 @@ public class User extends BaseEntity {
     private LocalDateTime confirmCodeRegisterTime;
     @Column(name = "is_enabled")
     private boolean isEnabled;
+    @Column(name = "is_confirmed")
+    private boolean isConfirmed;
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private Set<Ticket> tickets;
 

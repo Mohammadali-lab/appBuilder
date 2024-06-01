@@ -35,22 +35,27 @@ public class CustomerController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserAuthRequestDTO userAuthRequestDTO) {
-        try{
-            userService.loadUserByUsername(userAuthRequestDTO.getPhoneNumber());
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Username already exists");
-        } catch (UsernameNotFoundException e){
-            UserResponseDTO response;
-            try {
-                response = userService.createUser(userAuthRequestDTO);
-                return ResponseEntity.ok(response.getPhoneNumber());
-            } catch (RuntimeException ex) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-            } catch (UnsupportedEncodingException ex) {
-                throw new RuntimeException(ex);
-            } catch (JsonProcessingException ex) {
-                throw new RuntimeException(ex);
-            }
+
+        User user = userService.findUser(userAuthRequestDTO.getPhoneNumber());
+
+        Long userId = null;
+        UserResponseDTO response;
+        if(user!=null){
+            if(user.isConfirmed())
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Username already exists");
+            userId = user.getId();
+        }
+
+        try {
+            response = userService.createUser(userAuthRequestDTO, userId);
+            return ResponseEntity.ok(response.getPhoneNumber());
+        } catch (RuntimeException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex);
+        } catch (JsonProcessingException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

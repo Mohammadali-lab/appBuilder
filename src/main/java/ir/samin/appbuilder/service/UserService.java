@@ -69,13 +69,16 @@ public class UserService {
         }
     }
 
-    public UserResponseDTO createUser(UserAuthRequestDTO requestDTO) throws UnsupportedEncodingException, JsonProcessingException {
+    public UserResponseDTO createUser(UserAuthRequestDTO requestDTO, Long userId) throws UnsupportedEncodingException, JsonProcessingException {
 
         User user = new User();
+
+        user.setId(userId);
         user.setFirstName(requestDTO.getFirstName());
         user.setLastName(requestDTO.getLastName());
         user.setUsername(requestDTO.getPhoneNumber());
         user.setEnabled(false);
+        user.setConfirmed(false);
         String code = Integer.toString(generateConfirmCode());
         user.setConfirmCode(code);
 
@@ -125,7 +128,7 @@ public class UserService {
             LocalDateTime fiveMinutesAgo = LocalDateTime.now().minusMinutes(5);
             if (user.getConfirmCodeRegisterTime().isAfter(fiveMinutesAgo) &&
                     confirmationCode.getOtpCode().equals(user.getConfirmCode())) {
-
+                user.setConfirmed(true);
                 user.setEnabled(true);
                 userRepository.save(user);
                 String token = jwtUtil.generateToken(user.getUsername(), false);
@@ -141,6 +144,11 @@ public class UserService {
             throw new RuntimeException("otpCode is not valid");
         }
         throw new RuntimeException("user not found");
+    }
+
+    public User findUser(String phoneNumber) {
+        Optional<User> user = userRepository.findByUsername(phoneNumber);
+        return user.orElse(null);
     }
 
     public User findUserByPhoneNumber(String phoneNumber) {
